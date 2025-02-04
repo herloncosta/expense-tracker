@@ -3,24 +3,24 @@ import path from 'node:path'
 import { program } from 'commander'
 import { formatDate } from './src/utils.js'
 
+const DATA_DIR = 'data'
+const FILE_PATH = path.join(DATA_DIR, 'expenses.json')
+
 function loadExpenses() {
-    const dataDir = 'data'
-    const filePath = path.join(dataDir, 'expenses.json')
-
-    if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir)
+    if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR)
     }
 
-    if (!fs.existsSync(filePath)) {
-        fs.writeFileSync(filePath, '[]')
+    if (!fs.existsSync(FILE_PATH)) {
+        fs.writeFileSync(FILE_PATH, '[]')
     }
 
-    const data = fs.readFileSync(EXPENSES_FILE_PATH, 'utf-8')
+    const data = fs.readFileSync(FILE_PATH, 'utf-8')
     return JSON.parse(data)
 }
 
 function saveExpenses(expenses) {
-    fs.writeFileSync(EXPENSES_FILE_PATH, JSON.stringify(expenses, null, 2))
+    fs.writeFileSync(FILE_PATH, JSON.stringify(expenses, null, 2))
 }
 
 function addExpense(description, amount, category = 'Uncategorized') {
@@ -29,7 +29,7 @@ function addExpense(description, amount, category = 'Uncategorized') {
         id: expenses.length + 1,
         date: formatDate(new Date()),
         description,
-        amount: parseFloat(amount),
+        amount: Number.parseFloat(amount),
         category
     }
     expenses.push(expense)
@@ -39,7 +39,7 @@ function addExpense(description, amount, category = 'Uncategorized') {
 
 function updateExpense(id, description, amount, category) {
     const expenses = loadExpenses()
-    const expense = expenses.find(e => e.id == id)
+    const expense = expenses.find(e => e.id === +id)
 
     if (!expense) {
         console.log('Expense not found.')
@@ -55,7 +55,7 @@ function updateExpense(id, description, amount, category) {
 
 function deleteExpense(id) {
     let expenses = loadExpenses()
-    expenses = expenses.filter(e => e.id != id)
+    expenses = expenses.filter(e => e.id !== +id)
     saveExpenses(expenses)
     console.log('Expense deleted successfully.')
 }
