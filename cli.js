@@ -3,14 +3,20 @@ import path from 'node:path'
 import { program } from 'commander'
 import { __dirname, formatDate } from './src/utils.js'
 
-const EXPENSES_FILE_PATH = path.join(__dirname, 'expenses.json')
-
 function loadExpenses() {
-    if (fs.existsSync(EXPENSES_FILE_PATH)) {
-        const data = fs.readFileSync(EXPENSES_FILE_PATH, 'utf-8')
-        return JSON.parse(data)
+    const dataDir = 'data'
+    const filePath = path.join(dataDir, 'expenses.json')
+
+    if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir)
     }
-    return []
+
+    if (!fs.existsSync(filePath)) {
+        fs.writeFileSync(filePath, '[]')
+    }
+
+    const data = fs.readFileSync(EXPENSES_FILE_PATH, 'utf-8')
+    return JSON.parse(data)
 }
 
 function saveExpenses(expenses) {
