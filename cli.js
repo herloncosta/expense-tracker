@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { program } from 'commander'
+import Table from 'cli-table'
 import { formatDate } from './src/utils.js'
 
 const DATA_DIR = 'data'
@@ -60,6 +61,31 @@ function deleteExpense(id) {
     console.log('Expense deleted successfully.')
 }
 
+function listExpenses() {
+    const expenses = loadExpenses()
+
+    if (expenses.length === 0) {
+        console.log('No expenses found.')
+        return
+    }
+
+    const table = new Table({
+        head: ['ID', 'Date', 'Description', 'Amount', 'Category']
+    })
+
+    for (const expense of expenses) {
+        table.push([
+            expense.id,
+            expense.date,
+            expense.description,
+            expense.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+            expense.category
+        ])
+    }
+
+    console.log(table.toString())
+}
+
 program
     .command('add')
     .description('Add a new expense')
@@ -82,5 +108,7 @@ program
     .description('Delete expense')
     .requiredOption('--id <number>', 'ID of the expense to delete')
     .action(opt => deleteExpense(opt.id))
+
+program.command('list').description('List all expenses').action(listExpenses)
 
 program.parse(process.argv)
