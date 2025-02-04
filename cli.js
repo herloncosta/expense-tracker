@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { program } from 'commander'
-import { __dirname, formatDate } from './src/utils.js'
+import { formatDate } from './src/utils.js'
 
 function loadExpenses() {
     const dataDir = 'data'
