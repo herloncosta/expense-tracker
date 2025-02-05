@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { program } from 'commander'
 import Table from 'cli-table'
+import { createObjectCsvWriter } from 'csv-writer'
 import { formatDate, formatValueToBRL } from './src/utils.js'
 
 const DATA_DIR = 'data'
@@ -116,6 +117,31 @@ function showSummary(month) {
     console.log(`O total de despesas para o mês ${currentMonth} foi de R$ ${total}.`)
 }
 
+function exportToCSV() {
+    const expenses = loadExpenses()
+
+    if (expenses.length === 0) {
+        console.log('No expenses found.')
+        return
+    }
+
+    const csvWriter = createObjectCsvWriter({
+        path: 'expenses.csv',
+        header: [
+            { id: 'id', title: 'ID' },
+            { id: 'date', title: 'Date' },
+            { id: 'description', title: 'Description' },
+            { id: 'amount', title: 'Amount' },
+            { id: 'category', title: 'Category' }
+        ]
+    })
+
+    csvWriter
+        .writeRecords(expenses)
+        .then(() => console.log('Expenses exported to CSV successfully.'))
+        .catch(error => console.error('Error exporting expenses to CSV:', error))
+}
+
 program
     .command('add')
     .description('Add a new expense')
@@ -146,5 +172,7 @@ program
     .description('Show summary of all expenses')
     .option('--month <number> [1-12]')
     .action(opts => showSummary(opts.month))
+
+program.command('export').description('Export expenses to CSV file.').action(exportToCSV)
 
 program.parse(process.argv)
