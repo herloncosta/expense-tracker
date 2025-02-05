@@ -2,6 +2,7 @@
 
 O **Expenses Tracker** é uma aplicação de linha de comando (CLI) desenvolvida em Node.js para gerenciar finanças pessoais. Ele permite que os usuários adicionem, atualizem, excluam e visualizem despesas, além de fornecer resumos financeiros e funcionalidades avançadas, como categorização de despesas, definição de orçamentos mensais e exportação de dados para CSV.
 
+## URL do desafio: https://roadmap.sh/projects/expense-tracker
 ---
 
 ## Tecnologias Utilizadas
