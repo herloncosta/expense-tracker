@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { program } from 'commander'
 import Table from 'cli-table'
-import { formatDate } from './src/utils.js'
+import { formatDate, formatValueToBRL } from './src/utils.js'
 
 const DATA_DIR = 'data'
 const FILE_PATH = path.join(DATA_DIR, 'expenses.json')
@@ -28,7 +28,7 @@ function addExpense(description, amount, category = 'Uncategorized') {
     const expenses = loadExpenses()
     const expense = {
         id: expenses.length + 1,
-        date: formatDate(new Date()),
+        date: new Date(),
         description,
         amount: Number.parseFloat(amount),
         category
@@ -76,14 +76,44 @@ function listExpenses() {
     for (const expense of expenses) {
         table.push([
             expense.id,
-            expense.date,
+            formatDate(expense.date),
             expense.description,
-            expense.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+            formatValueToBRL(expense.amount),
             expense.category
         ])
     }
 
     console.log(table.toString())
+}
+
+function showSummary(month) {
+    const expenses = loadExpenses()
+    let filteredExpenses = expenses
+    let total = 0
+    const currentDate = new Date()
+    currentDate.setMonth(month - 1)
+    const currentMonth = currentDate.toLocaleDateString('pt-BR', { month: 'long' })
+
+    if (month)
+        filteredExpenses = expenses.filter(exp => new Date(exp.date).getMonth() + 1 === +month)
+
+    const table = new Table({
+        head: ['ID', 'Date', 'Description', 'Amount', 'Category']
+    })
+
+    for (const exp of filteredExpenses) {
+        total += exp.amount
+        table.push([
+            exp.id,
+            formatDate(exp.date),
+            exp.description,
+            formatValueToBRL(exp.amount),
+            exp.category
+        ])
+    }
+
+    console.log(table.toString())
+    console.log(`O total de despesas para o mês ${currentMonth} foi de R$ ${total}.`)
 }
 
 program
@@ -92,7 +122,7 @@ program
     .requiredOption('--description <string>', 'Description of the expense')
     .requiredOption('--amount <number>', 'Amount of the expense')
     .option('--category <string>', 'Category of the expense', 'Uncategorized')
-    .action(opt => addExpense(opt.description, opt.amount, opt.category))
+    .action(opts => addExpense(opts.description, opts.amount, opts.category))
 
 program
     .command('update')
@@ -101,14 +131,20 @@ program
     .option('--description <string>', 'New description of the expense')
     .option('--amount <number>', 'New amount of the expense')
     .option('--category <string>', 'New category of the expense')
-    .action(opt => updateExpense(opt.id, opt.description, opt.amount, opt.category))
+    .action(opts => updateExpense(opts.id, opts.description, opts.amount, opts.category))
 
 program
     .command('delete')
     .description('Delete expense')
     .requiredOption('--id <number>', 'ID of the expense to delete')
-    .action(opt => deleteExpense(opt.id))
+    .action(opts => deleteExpense(opts.id))
 
 program.command('list').description('List all expenses').action(listExpenses)
+
+program
+    .command('summary')
+    .description('Show summary of all expenses')
+    .option('--month <number> [1-12]')
+    .action(opts => showSummary(opts.month))
 
 program.parse(process.argv)
