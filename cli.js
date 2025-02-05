@@ -62,8 +62,13 @@ function deleteExpense(id) {
     console.log('Expense deleted successfully.')
 }
 
-function listExpenses() {
+function listExpenses(category) {
     const expenses = loadExpenses()
+    let filteredExpenses = expenses
+
+    if (category) {
+        filteredExpenses = expenses.filter(e => e.category === category)
+    }
 
     if (expenses.length === 0) {
         console.log('No expenses found.')
@@ -74,7 +79,7 @@ function listExpenses() {
         head: ['ID', 'Date', 'Description', 'Amount', 'Category']
     })
 
-    for (const expense of expenses) {
+    for (const expense of filteredExpenses) {
         table.push([
             expense.id,
             formatDate(expense.date),
@@ -165,7 +170,11 @@ program
     .requiredOption('--id <number>', 'ID of the expense to delete')
     .action(opts => deleteExpense(opts.id))
 
-program.command('list').description('List all expenses').action(listExpenses)
+program
+    .command('list')
+    .description('List all expenses')
+    .option('--category <string>')
+    .action(opts => listExpenses(opts.category))
 
 program
     .command('summary')
